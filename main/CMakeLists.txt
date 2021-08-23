@@ -1,7 +1,7 @@
 # This file was automatically generated for projects
 # without default 'CMakeLists.txt' file.
 
-set(SOURCES main.c)
+set(COMPONENT_SRCS "main.c" "wifi.c")
+set(COMPONENT_ADD_INCLUDEDIRS "." "./includes")
 
-idf_component_register(SRCS main.c 
-                       INCLUDE_DIRS . images)
+register_component()
