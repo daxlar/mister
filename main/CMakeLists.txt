@@ -1,4 +1,4 @@
-set(COMPONENT_SRCS "main.c" "ui.c" "fft.c" "wifi.c" "rtcTime.c")
+set(COMPONENT_SRCS "main.c" "ui.c" "wifi.c" "appRTC.c" "iot.c" "pir.c" "servo.c")
 set(COMPONENT_ADD_INCLUDEDIRS "." "./includes")
 
 register_component()

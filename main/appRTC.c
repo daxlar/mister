@@ -11,14 +11,14 @@
 #include "esp_sntp.h"
 
 char strftime_buf[64];
-static const char *TAG = "mister";
+static const char *TAG = "rtc";
 
 static void time_sync_notification_cb(struct timeval *tv)
 {
     ESP_LOGI(TAG, "Notification of a time synchronization event");
 }
 
-void parseNTPStringToRTCTime(char strftime_buf[], int bufferSize, rtc_date_t *dateTime)
+static void parseNTPStringToRTCTime(char strftime_buf[], int bufferSize, rtc_date_t *dateTime)
 {
     int strLength = 0;
     for (strLength = 0; strLength < bufferSize && strftime_buf[strLength] != '\0'; strLength++)
@@ -66,7 +66,7 @@ void parseNTPStringToRTCTime(char strftime_buf[], int bufferSize, rtc_date_t *da
     }
 
     char monthLookupTable[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 12; i++)
     {
         if (strcmp(timeUnits[MONTH], monthLookupTable[i]) == 0)
         {
@@ -81,7 +81,7 @@ void parseNTPStringToRTCTime(char strftime_buf[], int bufferSize, rtc_date_t *da
     dateTime->year = (timeUnits[YEAR][0] - '0') * 1000 + (timeUnits[YEAR][1] - '0') * 100 + (timeUnits[YEAR][2] - '0') * 10 + (timeUnits[YEAR][3] - '0');
 }
 
-void setSNTP()
+void app_rtc_init()
 {
     int i = 0;
 

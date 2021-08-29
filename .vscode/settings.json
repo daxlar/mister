@@ -1,5 +1,19 @@
 {
     "files.associations": {
-        "core2foraws.h": "c"
+        "core2foraws.h": "c",
+        "*.ipp": "c",
+        "*.tcc": "c",
+        "chrono": "c",
+        "ctime": "c",
+        "future": "c",
+        "limits": "c",
+        "numeric": "c",
+        "ratio": "c",
+        "streambuf": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "esp_event.h": "c",
+        "aws_iot_mqtt_client_interface.h": "c"
     }
 }

@@ -5,3 +5,6 @@
 .vscode/ipch
 .sdkconfig
 .sdkconfig.old
+.input.json
+.DS_Store
+
