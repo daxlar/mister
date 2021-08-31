@@ -20,40 +20,25 @@
 
 #include "core2forAWS.h"
 #include "wifi.h"
+#include "meeting.h"
+
+#define STARTING_MEETING_INTERVAL "0000-0000"
+#define MEETING_START_TIME_NUM_DIGITS 4
+#define STARTING_ACKNOWLEDGE false
+#define MAX_LENGTH_OF_UPDATE_JSON_BUFFER 200
 
 static const char *TAG = "iot";
-
-#define HEATING "HEATING"
-#define COOLING "COOLING"
-#define STANDBY "STANDBY"
-
-#define STARTING_ROOMTEMPERATURE 0.0f
-#define STARTING_SOUNDLEVEL 0x00
-#define STARTING_HVACSTATUS STANDBY
-#define STARTING_ROOMOCCUPANCY false
-
-#define MAX_LENGTH_OF_UPDATE_JSON_BUFFER 200
 
 /* CA Root certificate */
 extern const uint8_t aws_root_ca_pem_start[] asm("_binary_aws_root_ca_pem_start");
 extern const uint8_t aws_root_ca_pem_end[] asm("_binary_aws_root_ca_pem_end");
-
 /* Default MQTT HOST URL is pulled from the aws_iot_config.h */
 char HostAddress[255] = AWS_IOT_MQTT_HOST;
 /* Default MQTT port is pulled from the aws_iot_config.h */
 uint32_t port = AWS_IOT_MQTT_PORT;
 
-char JsonDocumentBuffer[MAX_LENGTH_OF_UPDATE_JSON_BUFFER];
-size_t sizeOfJsonDocumentBuffer = sizeof(JsonDocumentBuffer) / sizeof(JsonDocumentBuffer[0]);
-// initialize the mqtt client
-AWS_IoT_Client iotCoreClient;
-IoT_Error_t rc;
-char *client_id;
-jsonStruct_t roomOccupancyActuator;
-jsonStruct_t hvacStatusActuator;
-
-char hvacStatus[7] = STARTING_HVACSTATUS;
-bool roomOccupancy = STARTING_ROOMOCCUPANCY;
+char meetingInterval[] = STARTING_MEETING_INTERVAL;
+bool acknowledgement = STARTING_ACKNOWLEDGE;
 
 void iot_subscribe_callback_handler(AWS_IoT_Client *pClient, char *topicName, uint16_t topicNameLen,
                                     IoT_Publish_Message_Params *params, void *pData)
@@ -103,7 +88,7 @@ void ShadowUpdateStatusCallback(const char *pThingName, ShadowActions_t action, 
     IOT_UNUSED(pReceivedJsonDocument);
     IOT_UNUSED(pContextData);
 
-    ESP_LOGI(TAG, "Shadow update callback: %s", pReceivedJsonDocument);
+    //ESP_LOGI(TAG, "Shadow update callback: %s", pReceivedJsonDocument);
 
     shadowUpdateInProgress = false;
 
@@ -121,70 +106,87 @@ void ShadowUpdateStatusCallback(const char *pThingName, ShadowActions_t action, 
     }
 }
 
-void hvac_Callback(const char *pJsonString, uint32_t JsonStringDataLen, jsonStruct_t *pContext)
+void meetingInterval_Callback(const char *pJsonString, uint32_t JsonStringDataLen, jsonStruct_t *pContext)
 {
     IOT_UNUSED(pJsonString);
     IOT_UNUSED(JsonStringDataLen);
 
     char *status = (char *)(pContext->pData);
 
-    ESP_LOGI(TAG, "hvac callback pJsonString: %s", pJsonString);
+    //ESP_LOGI(TAG, "meetingInterval callback pJsonString: %s", pJsonString);
 
     if (pContext != NULL)
     {
-        ESP_LOGI(TAG, "Delta - hvacStatus state changed to %s", status);
-    }
+        ESP_LOGI(TAG, "**********************************************");
+        ESP_LOGI(TAG, "Delta - meetingInterval state changed to %s", status);
+        ESP_LOGI(TAG, "**********************************************");
 
-    if (strcmp(status, HEATING) == 0)
-    {
-        ESP_LOGI(TAG, "setting side LEDs to red");
-        Core2ForAWS_Sk6812_SetSideColor(SK6812_SIDE_LEFT, 0xFF0000);
-        Core2ForAWS_Sk6812_SetSideColor(SK6812_SIDE_RIGHT, 0xFF0000);
-        Core2ForAWS_Sk6812_Show();
-    }
-    else if (strcmp(status, COOLING) == 0)
-    {
-        ESP_LOGI(TAG, "setting side LEDs to blue");
-        Core2ForAWS_Sk6812_SetSideColor(SK6812_SIDE_LEFT, 0x0000FF);
-        Core2ForAWS_Sk6812_SetSideColor(SK6812_SIDE_RIGHT, 0x0000FF);
-        Core2ForAWS_Sk6812_Show();
-    }
-    else
-    {
-        ESP_LOGI(TAG, "clearing side LEDs");
-        Core2ForAWS_Sk6812_Clear();
-        Core2ForAWS_Sk6812_Show();
+        char meetingStartTimeStrSegment[MEETING_START_TIME_NUM_DIGITS];
+        char meetingEndTimeStrSegment[MEETING_START_TIME_NUM_DIGITS];
+
+        int strIndex = 0;
+        for (; strIndex < MEETING_START_TIME_NUM_DIGITS; strIndex++)
+        {
+            meetingStartTimeStrSegment[strIndex] = status[strIndex] - '0';
+        }
+        strIndex++;
+        int offset = strIndex;
+        for (; status[strIndex] != '\0'; strIndex++)
+        {
+            meetingEndTimeStrSegment[strIndex - offset] = status[strIndex] - '0';
+        }
+
+        int meetingTimeStart = meetingStartTimeStrSegment[0] * 1000 + meetingStartTimeStrSegment[1] * 100 + meetingStartTimeStrSegment[2] * 10 + meetingStartTimeStrSegment[3];
+        int meetingTimeEnd = meetingEndTimeStrSegment[0] * 1000 + meetingEndTimeStrSegment[1] * 100 + meetingEndTimeStrSegment[2] * 10 + meetingEndTimeStrSegment[3];
+
+        struct MeetingInterval meeting;
+        meeting.beginInMinutes = meetingTimeStart;
+        meeting.endInMinutes = meetingTimeEnd;
+
+        ESP_LOGI(TAG, "Meeting time start: %d", meetingTimeStart);
+        ESP_LOGI(TAG, "Meeting time end %d", meetingTimeEnd);
+        ESP_LOGI(TAG, "Sending through the queue!");
+
+        xQueueSend(get_meetingEnd_evt_queue(), &meeting, 0);
     }
 }
 
-void occupancy_Callback(const char *pJsonString, uint32_t JsonStringDataLen, jsonStruct_t *pContext)
+void acknowledgement_Callback(const char *pJsonString, uint32_t JsonStringDataLen, jsonStruct_t *pContext)
 {
     IOT_UNUSED(pJsonString);
     IOT_UNUSED(JsonStringDataLen);
 
     if (pContext != NULL)
     {
-        ESP_LOGI(TAG, "Delta - roomOccupancy state changed to %d", *(bool *)(pContext->pData));
+        ESP_LOGI(TAG, "Delta - acknowledgement state changed to %d", *(bool *)(pContext->pData));
     }
 }
 
-void iot_init()
+void aws_iot_task(void *param)
 {
-    rc = FAILURE;
 
-    hvacStatusActuator.cb = hvac_Callback;
-    hvacStatusActuator.pKey = "hvacStatus";
-    hvacStatusActuator.pData = &hvacStatus;
-    hvacStatusActuator.type = SHADOW_JSON_STRING;
-    hvacStatusActuator.dataLength = strlen(hvacStatus) + 1;
+    IoT_Error_t rc = FAILURE;
 
-    roomOccupancyActuator.cb = occupancy_Callback;
-    roomOccupancyActuator.pKey = "roomOccupancy";
-    roomOccupancyActuator.pData = &roomOccupancy;
-    roomOccupancyActuator.type = SHADOW_JSON_BOOL;
-    roomOccupancyActuator.dataLength = sizeof(bool);
+    char JsonDocumentBuffer[MAX_LENGTH_OF_UPDATE_JSON_BUFFER];
+    size_t sizeOfJsonDocumentBuffer = sizeof(JsonDocumentBuffer) / sizeof(JsonDocumentBuffer[0]);
+
+    jsonStruct_t meetingIntervalActuator;
+    meetingIntervalActuator.cb = meetingInterval_Callback;
+    meetingIntervalActuator.pKey = "meetingInterval";
+    meetingIntervalActuator.pData = &meetingInterval;
+    meetingIntervalActuator.type = SHADOW_JSON_STRING;
+    meetingIntervalActuator.dataLength = strlen(meetingInterval) + 1;
+
+    jsonStruct_t acknowledgementActuator;
+    acknowledgementActuator.cb = acknowledgement_Callback;
+    acknowledgementActuator.pKey = "acknowledgement";
+    acknowledgementActuator.pData = &acknowledgement;
+    acknowledgementActuator.type = SHADOW_JSON_BOOL;
+    acknowledgementActuator.dataLength = sizeof(bool);
 
     ESP_LOGI(TAG, "AWS IoT SDK Version %d.%d.%d-%s", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_TAG);
+
+    AWS_IoT_Client iotCoreClient;
 
     ShadowInitParameters_t sp = ShadowInitParametersDefault;
     sp.pHost = HostAddress;
@@ -197,15 +199,13 @@ void iot_init()
     sp.pClientKey = "#0";
 
 #define CLIENT_ID_LEN (ATCA_SERIAL_NUM_SIZE * 2)
-    client_id = malloc(CLIENT_ID_LEN + 1);
+    char *client_id = malloc(CLIENT_ID_LEN + 1);
     ATCA_STATUS ret = Atecc608_GetSerialString(client_id);
     if (ret != ATCA_SUCCESS)
     {
         ESP_LOGE(TAG, "Failed to get device serial from secure element. Error: %i", ret);
         abort();
     }
-
-    //ui_textarea_add("\n\nDevice client Id:\n>> %s <<\n", client_id, CLIENT_ID_LEN);
 
     /* Wait for WiFI to show as connected */
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
@@ -246,23 +246,20 @@ void iot_init()
         abort();
     }
 
-    // register delta callback for roomOccupancy
-    rc = aws_iot_shadow_register_delta(&iotCoreClient, &roomOccupancyActuator);
+    // register delta callback for acknowledgement
+    rc = aws_iot_shadow_register_delta(&iotCoreClient, &acknowledgementActuator);
     if (SUCCESS != rc)
     {
         ESP_LOGE(TAG, "Shadow Register Delta Error");
     }
 
     // register delta callback for hvacStatus
-    rc = aws_iot_shadow_register_delta(&iotCoreClient, &hvacStatusActuator);
+    rc = aws_iot_shadow_register_delta(&iotCoreClient, &meetingIntervalActuator);
     if (SUCCESS != rc)
     {
         ESP_LOGE(TAG, "Shadow Register Delta Error");
     }
-}
 
-void aws_iot_task(void *param)
-{
     // loop and publish changes
     while (NETWORK_ATTEMPTING_RECONNECT == rc || NETWORK_RECONNECTED == rc || SUCCESS == rc)
     {
@@ -275,31 +272,33 @@ void aws_iot_task(void *param)
             continue;
         }
 
+        /*
         ESP_LOGI(TAG, "*****************************************************************************************");
-        ESP_LOGI(TAG, "On Device: roomOccupancy %s", roomOccupancy ? "true" : "false");
-        ESP_LOGI(TAG, "On Device: hvacStatus %s", hvacStatus);
-
-        roomOccupancy = true;
+        ESP_LOGI(TAG, "On Device: roomOccupancy %s", acknowledgement ? "true" : "false");
+        ESP_LOGI(TAG, "On Device: hvacStatus %s", meetingInterval);
+        */
+        acknowledgement = true;
 
         rc = aws_iot_shadow_init_json_document(JsonDocumentBuffer, sizeOfJsonDocumentBuffer);
         if (SUCCESS == rc)
         {
-            rc = aws_iot_shadow_add_reported(JsonDocumentBuffer, sizeOfJsonDocumentBuffer, 2, &roomOccupancyActuator, &hvacStatusActuator);
+            rc = aws_iot_shadow_add_reported(JsonDocumentBuffer, sizeOfJsonDocumentBuffer, 2, &acknowledgementActuator, &meetingIntervalActuator);
             if (SUCCESS == rc)
             {
                 rc = aws_iot_finalize_json_document(JsonDocumentBuffer, sizeOfJsonDocumentBuffer);
                 if (SUCCESS == rc)
                 {
-                    ESP_LOGI(TAG, "Update Shadow: %s", JsonDocumentBuffer);
+                    //ESP_LOGI(TAG, "Update Shadow: %s", JsonDocumentBuffer);
                     rc = aws_iot_shadow_update(&iotCoreClient, client_id, JsonDocumentBuffer,
                                                ShadowUpdateStatusCallback, NULL, 4, true);
                     shadowUpdateInProgress = true;
                 }
             }
         }
+        /*
         ESP_LOGI(TAG, "*****************************************************************************************");
         ESP_LOGI(TAG, "Stack remaining for task '%s' is %d bytes", pcTaskGetTaskName(NULL), uxTaskGetStackHighWaterMark(NULL));
-
+        */
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
