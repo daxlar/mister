@@ -41,7 +41,7 @@ void meeting_task(void *params)
     while (1)
     {
         struct MeetingInterval meeting;
-        while (xQueueReceive(meetingEnd_evt_queue, &meeting, pdMS_TO_TICKS(10)) == pdPASS)
+        if (xQueueReceive(meetingEnd_evt_queue, &meeting, pdMS_TO_TICKS(10)) == pdPASS)
         {
             ESP_LOGI(TAG, "meeting start from queue: %d", meeting.beginInMinutes);
             ESP_LOGI(TAG, "meeting end from queue: %d", meeting.endInMinutes);
