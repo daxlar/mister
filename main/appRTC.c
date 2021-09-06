@@ -49,6 +49,10 @@ static void parseNTPStringToRTCTime(char strftime_buf[], int bufferSize, rtc_dat
 
     while (bufferIndex < strLength)
     {
+        while (bufferIndex < strLength && strftime_buf[bufferIndex] == ' ')
+        {
+            bufferIndex++;
+        }
         int timeUnitCharIndex = 0;
         while (bufferIndex < strLength && strftime_buf[bufferIndex] != ' ')
         {
@@ -70,11 +74,19 @@ static void parseNTPStringToRTCTime(char strftime_buf[], int bufferSize, rtc_dat
     {
         if (strcmp(timeUnits[MONTH], monthLookupTable[i]) == 0)
         {
-            dateTime->month = i;
+            dateTime->month = i + 1;
+            break;
         }
     }
 
-    dateTime->day = (timeUnits[DAY][0] - '0') * 10 + (timeUnits[DAY][1] - '0');
+    if (strlen(timeUnits[DAY]) == 1)
+    {
+        dateTime->day = (timeUnits[DAY][0] - '0');
+    }
+    else
+    {
+        dateTime->day = (timeUnits[DAY][0] - '0') * 10 + (timeUnits[DAY][1] - '0');
+    }
     dateTime->hour = (timeUnits[HOUR][0] - '0') * 10 + (timeUnits[HOUR][1] - '0');
     dateTime->minute = (timeUnits[MINUTE][0] - '0') * 10 + (timeUnits[MINUTE][1] - '0');
     dateTime->second = (timeUnits[SECOND][0] - '0') * 10 + (timeUnits[SECOND][1] - '0');

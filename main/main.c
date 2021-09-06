@@ -21,6 +21,9 @@
 #include "meeting.h"
 #include "pir.h"
 #include "servo.h"
+#include "sound.h"
+#include "mister.h"
+#include "robot.h"
 
 void app_main()
 {
@@ -34,7 +37,10 @@ void app_main()
     meeting_init();
     pir_init();
     servo_init();
+    mister_init();
+    robot_init();
 
+    xTaskCreatePinnedToCore(&pir_task, "pir_task", 4096 * 2, NULL, 4, NULL, 0);
     xTaskCreatePinnedToCore(&meeting_task, "meeting_task", 4096 * 2, NULL, 3, NULL, 0);
     xTaskCreatePinnedToCore(&aws_iot_task, "aws_iot_task", 4096 * 2, NULL, 5, NULL, 1);
 }

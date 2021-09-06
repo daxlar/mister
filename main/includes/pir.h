@@ -3,5 +3,7 @@
 
 void pir_init();
 void pir_start();
+void pir_task(void *params);
+xQueueHandle getPirQueueHandle();
 
 #endif

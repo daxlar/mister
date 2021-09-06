@@ -139,15 +139,18 @@ void meetingInterval_Callback(const char *pJsonString, uint32_t JsonStringDataLe
         int meetingTimeStart = meetingStartTimeStrSegment[0] * 1000 + meetingStartTimeStrSegment[1] * 100 + meetingStartTimeStrSegment[2] * 10 + meetingStartTimeStrSegment[3];
         int meetingTimeEnd = meetingEndTimeStrSegment[0] * 1000 + meetingEndTimeStrSegment[1] * 100 + meetingEndTimeStrSegment[2] * 10 + meetingEndTimeStrSegment[3];
 
+        ESP_LOGI(TAG, "Meeting time start: %d", meetingTimeStart);
+        ESP_LOGI(TAG, "Meeting time end %d", meetingTimeEnd);
+
+        /*
         struct MeetingInterval meeting;
         meeting.beginInMinutes = meetingTimeStart;
         meeting.endInMinutes = meetingTimeEnd;
-
-        ESP_LOGI(TAG, "Meeting time start: %d", meetingTimeStart);
-        ESP_LOGI(TAG, "Meeting time end %d", meetingTimeEnd);
+       
         ESP_LOGI(TAG, "Sending through the queue!");
-
         xQueueSend(get_meetingEnd_evt_queue(), &meeting, 0);
+        */
+        mark_meeting_unit_interval(meetingTimeStart / 15, meetingTimeEnd / 15);
     }
 }
 
@@ -158,7 +161,7 @@ void acknowledgement_Callback(const char *pJsonString, uint32_t JsonStringDataLe
 
     if (pContext != NULL)
     {
-        ESP_LOGI(TAG, "Delta - acknowledgement state changed to %d", *(bool *)(pContext->pData));
+        //ESP_LOGI(TAG, "Delta - acknowledgement state changed to %d", *(bool *)(pContext->pData));
     }
 }
 
