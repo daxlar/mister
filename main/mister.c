@@ -25,6 +25,8 @@ void mister_init()
     mister_state = OFF;
 
     ESP_LOGI(TAG, "mister init complete");
+
+    gpio_set_level(MISTER_PIN, 0);
 }
 
 void mister_spray_on()
@@ -34,7 +36,9 @@ void mister_spray_on()
         return;
     }
     gpio_set_level(MISTER_PIN, 1);
+    vTaskDelay(pdMS_TO_TICKS(2000));
     mister_state = ON;
+    ESP_LOGI(TAG, "mister turned on");
 }
 
 void mister_spray_off()
@@ -43,12 +47,12 @@ void mister_spray_off()
     {
         return;
     }
-    vTaskDelay(pdMS_TO_TICKS(1000));
     gpio_set_level(MISTER_PIN, 0);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     gpio_set_level(MISTER_PIN, 1);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     gpio_set_level(MISTER_PIN, 0);
+    vTaskDelay(pdMS_TO_TICKS(2000));
     mister_state = OFF;
     ESP_LOGI(TAG, "mister turned off");
 }

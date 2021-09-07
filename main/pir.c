@@ -14,6 +14,7 @@
 #define PIR_SENSING_PIN GPIO_NUM_32
 #define GPIO_QUEUE_SIZE 3
 #define MEETING_RESPONSE_QUEUE_SIZE 2
+#define BACK_OFF_TIME_IN_MINUTES 2
 
 static xQueueHandle gpio_evt_queue = NULL;
 static xQueueHandle meeting_end_response_queue;
@@ -51,11 +52,25 @@ void pir_init()
 
 static bool check_meeting_spillover(int meetingFinishedInitialTime)
 {
+    ESP_LOGI(TAG, "starting spillover check");
+
     rtc_date_t dateTime;
     BM8563_GetTime(&dateTime);
-    bool delaySpillover = dateTime.minute < meetingFinishedInitialTime;      // checking the spillover from 59 -> 00
+    bool delaySpillover = dateTime.minute < meetingFinishedInitialTime; // checking the spillover from 59 -> 00
+
+    ESP_LOGI(TAG, "checked time wrap around");
+
+    int relativeStartingMeetingUnit = meetingFinishedInitialTime / MEETING_MINIMUM_INTERVAL;
+    int relativeCurrentMeetingUnit = dateTime.minute / MEETING_MINIMUM_INTERVAL;
+    bool meetingUnitOverlap = (relativeCurrentMeetingUnit != relativeStartingMeetingUnit);
+
+    ESP_LOGI(TAG, "changed different meeting unit");
+
     bool delayOverlap = (dateTime.minute - meetingFinishedInitialTime) > 15; // checking the spill over into another meeting unit
-    return (delayOverlap || delaySpillover);
+
+    bool ret_val = (delayOverlap || delaySpillover || meetingUnitOverlap);
+    ESP_LOGI(TAG, "delay spill over status: %d", ret_val);
+    return ret_val;
 }
 
 void pir_task(void *params)
@@ -79,8 +94,8 @@ void pir_task(void *params)
             ESP_LOGI(TAG, "got something from the queue");
             BM8563_GetTime(&dateTime);
             meetingFinishedInitialTime = dateTime.minute;
-            meetingUnitIndex = (dateTime.hour * 60 + dateTime.minute) / 15;
-            delayTimeinMs = 2 * 60 * 1000; // wait for movement for 2 minute
+            meetingUnitIndex = (dateTime.hour * 60 + dateTime.minute) / MEETING_MINIMUM_INTERVAL;
+            delayTimeinMs = BACK_OFF_TIME_IN_MINUTES * 60 * 1000; // wait for movement for 2 minute
             delay = true;
             // calculate the delay here to wait for movement, if movement, back off, then wait again until the meething threshold
             while (delay)
@@ -97,6 +112,8 @@ void pir_task(void *params)
                     }
                     continue;
                 }
+
+                ESP_LOGI(TAG, "nothing from PIR");
 
                 if (check_meeting_spillover(meetingFinishedInitialTime))
                 {

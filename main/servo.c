@@ -26,17 +26,20 @@ void servo_init()
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
 }
 
-static inline uint32_t example_convert_servo_angle_to_duty_us(int angle)
+static void servo_start()
 {
-    return (angle + SERVO_MAX_DEGREE) * (SERVO_MAX_PULSEWIDTH_US - SERVO_MIN_PULSEWIDTH_US) / (2 * SERVO_MAX_DEGREE) + SERVO_MIN_PULSEWIDTH_US;
+    mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, 1000);
 }
 
-void servo_full_rotation()
+static void servo_stop()
 {
-    for (int angle = -SERVO_MAX_DEGREE; angle < SERVO_MAX_DEGREE; angle += 20)
-    {
-        ESP_LOGI(TAG, "Angle of rotation: %d", angle);
-        ESP_ERROR_CHECK(mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, example_convert_servo_angle_to_duty_us(angle)));
-        vTaskDelay(pdMS_TO_TICKS(100)); //Add delay, since it takes time for servo to rotate, generally 100ms/60degree rotation under 5V power supply
-    }
+    mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, 0);
+}
+
+void servo_rotate()
+{
+    servo_start();
+    vTaskDelay(pdMS_TO_TICKS(200)); // 200 is magic number
+    servo_stop();
+    ESP_LOGI(TAG, "servo stopped");
 }

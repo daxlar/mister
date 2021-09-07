@@ -12,7 +12,7 @@ struct MeetingInterval
     int endInMinutes;
 };
 
-#define MEETING_DEAD_ZONE_IN_MINUTES 3 // the time before the meeting that if someone is still in the room, it will count as the next meeting
+#define MEETING_MINIMUM_INTERVAL 15
 
 void meeting_init();
 xQueueHandle get_meetingEnd_evt_queue();

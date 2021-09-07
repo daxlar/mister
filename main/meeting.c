@@ -2,8 +2,7 @@
 #include "meeting.h"
 #include "pir.h"
 
-#define TOTAL_MEETING_INTERVALS 96 // 96 intervals every 24 hours
-#define MEETING_MINIMUM_INTERVAL 15
+#define TOTAL_MEETING_INTERVALS 96        // 96 intervals every 24 hours
 #define MEETING_BUFFER_DURATION_MINUTES 3 // duration to wait after the end of a meeting to see if another meeting will be scheduled
 #define EIGHT_AM_IN_MEETING_UNITS 32
 #define FOUR_PM_IN_MEETING_UINTS 64
@@ -64,8 +63,6 @@ void meeting_task(void *params)
 {
     ESP_LOGI(TAG, "starting the meeting task!");
     rtc_date_t dateTime;
-    int meetingStartIdx;
-    int meetingEndIdx;
     int currentMeetingUnitsIndex;
     int currentMeetingUnitState;
     int previousMeetingUnitState;
@@ -79,25 +76,6 @@ void meeting_task(void *params)
 
     while (1)
     {
-
-        /*
-        struct MeetingInterval meeting;
-        int meetingQueueBackOffTimeinMs = 3 * 1000; // 3 seconds
-        if (xQueueReceive(meetingEnd_evt_queue, &meeting, pdMS_TO_TICKS(meetingQueueBackOffTimeinMs)) == pdPASS)
-        {
-            ESP_LOGI(TAG, "meeting start from queue: %d", meeting.beginInMinutes);
-            ESP_LOGI(TAG, "meeting end from queue: %d", meeting.endInMinutes);
-            meetingStartIdx = meeting.beginInMinutes / MEETING_MINIMUM_INTERVAL;
-            meetingEndIdx = meeting.endInMinutes / MEETING_MINIMUM_INTERVAL;
-            ESP_LOGI(TAG, "Indexs: %d, %d", meetingStartIdx, meetingEndIdx);
-
-            for (int i = meetingStartIdx; i < meetingEndIdx; i++)
-            {
-                mark_meeting_unit(i);
-            }
-        }
-        */
-
         BM8563_GetTime(&dateTime);
         currentMeetingUnitsIndex = (dateTime.hour * 60 + dateTime.minute) / MEETING_MINIMUM_INTERVAL;
         currentMeetingUnitState = 0;

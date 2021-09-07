@@ -165,28 +165,6 @@ bool occupancy_ui_init()
         lv_msgbox_set_text(mbox1, timeOutString);
     }
 
-    /*
-    bool haveConfirmed = false;
-    xSemaphoreTake(confirmationSemaphore, portMAX_DELAY);
-    haveConfirmed = confirmation;
-    xSemaphoreTake(xGuiSemaphore, portMAX_DELAY);
-    lv_obj_clean(lv_scr_act());
-    lv_obj_t *mbox2 = lv_msgbox_create(lv_scr_act(), NULL);
-    lv_msgbox_set_text(mbox2, "Thank you for confirming!");
-    lv_obj_set_width(mbox2, 200);
-    lv_obj_align(mbox2, NULL, LV_ALIGN_CENTER, 0, 0);
-    if (haveConfirmed == false)
-    {
-        lv_msgbox_set_text(mbox2, "Starting the misting robot!");
-    }
-    else
-    {
-        lv_msgbox_set_text(mbox2, "Thank you for confirming!");
-    }
-    xSemaphoreGive(xGuiSemaphore);
-    xSemaphoreGive(confirmationSemaphore);
-    */
-
     bool haveConfirmed = false;
     xSemaphoreTake(confirmationSemaphore, portMAX_DELAY);
     haveConfirmed = confirmation;

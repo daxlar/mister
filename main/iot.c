@@ -21,6 +21,7 @@
 #include "core2forAWS.h"
 #include "wifi.h"
 #include "meeting.h"
+#include "ui.h"
 
 #define STARTING_MEETING_INTERVAL "0000-0000"
 #define MEETING_START_TIME_NUM_DIGITS 4
@@ -50,7 +51,7 @@ void iot_subscribe_callback_handler(AWS_IoT_Client *pClient, char *topicName, ui
 void disconnect_callback_handler(AWS_IoT_Client *pClient, void *data)
 {
     ESP_LOGW(TAG, "MQTT Disconnect");
-    //ui_textarea_add("Disconnected from AWS IoT Core...", NULL, 0);
+    ui_textarea_add("Disconnected from AWS IoT Core...", NULL, 0);
 
     IoT_Error_t rc = FAILURE;
 
@@ -142,15 +143,7 @@ void meetingInterval_Callback(const char *pJsonString, uint32_t JsonStringDataLe
         ESP_LOGI(TAG, "Meeting time start: %d", meetingTimeStart);
         ESP_LOGI(TAG, "Meeting time end %d", meetingTimeEnd);
 
-        /*
-        struct MeetingInterval meeting;
-        meeting.beginInMinutes = meetingTimeStart;
-        meeting.endInMinutes = meetingTimeEnd;
-       
-        ESP_LOGI(TAG, "Sending through the queue!");
-        xQueueSend(get_meetingEnd_evt_queue(), &meeting, 0);
-        */
-        mark_meeting_unit_interval(meetingTimeStart / 15, meetingTimeEnd / 15);
+        mark_meeting_unit_interval(meetingTimeStart / MEETING_MINIMUM_INTERVAL, meetingTimeEnd / MEETING_MINIMUM_INTERVAL);
     }
 }
 
@@ -210,6 +203,8 @@ void aws_iot_task(void *param)
         abort();
     }
 
+    ui_textarea_add("\n\nDevice client Id:\n>> %s <<\n", client_id, CLIENT_ID_LEN);
+
     /* Wait for WiFI to show as connected */
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                         false, true, portMAX_DELAY);
@@ -235,7 +230,7 @@ void aws_iot_task(void *param)
         ESP_LOGE(TAG, "aws_iot_shadow_connect returned error %d, aborting...", rc);
         abort();
     }
-    //ui_textarea_add("Connected to AWS IoT Device Shadow service", NULL, 0);
+    ui_textarea_add("Connected to AWS IoT Device Shadow service", NULL, 0);
 
     /*
      * Enable Auto Reconnect functionality. Minimum and Maximum time of Exponential backoff are set in aws_iot_config.h
@@ -275,11 +270,6 @@ void aws_iot_task(void *param)
             continue;
         }
 
-        /*
-        ESP_LOGI(TAG, "*****************************************************************************************");
-        ESP_LOGI(TAG, "On Device: roomOccupancy %s", acknowledgement ? "true" : "false");
-        ESP_LOGI(TAG, "On Device: hvacStatus %s", meetingInterval);
-        */
         acknowledgement = true;
 
         rc = aws_iot_shadow_init_json_document(JsonDocumentBuffer, sizeOfJsonDocumentBuffer);
@@ -291,17 +281,12 @@ void aws_iot_task(void *param)
                 rc = aws_iot_finalize_json_document(JsonDocumentBuffer, sizeOfJsonDocumentBuffer);
                 if (SUCCESS == rc)
                 {
-                    //ESP_LOGI(TAG, "Update Shadow: %s", JsonDocumentBuffer);
                     rc = aws_iot_shadow_update(&iotCoreClient, client_id, JsonDocumentBuffer,
                                                ShadowUpdateStatusCallback, NULL, 4, true);
                     shadowUpdateInProgress = true;
                 }
             }
         }
-        /*
-        ESP_LOGI(TAG, "*****************************************************************************************");
-        ESP_LOGI(TAG, "Stack remaining for task '%s' is %d bytes", pcTaskGetTaskName(NULL), uxTaskGetStackHighWaterMark(NULL));
-        */
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 

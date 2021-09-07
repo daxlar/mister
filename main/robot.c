@@ -43,7 +43,7 @@ void robot_task(void *params)
     }
 
     mister_spray_on();
-    servo_full_rotation();
+    servo_rotate();
     mister_spray_off();
 
     robot_status = ROBOT_FINISHED;
