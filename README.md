@@ -23,10 +23,10 @@ The `mister` project is a singular device that tries to intelligently disinfect 
 #### Getting started
 
 1. Get a [core2ForAWS](https://www.amazon.com/M5Stack-Core2-ESP32-Development-EduKit/dp/B08VGRZYJR)
-2. Clone this repository
-3. [Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)
-4. [Provisioning part 1](https://edukit.workshop.aws/en/blinky-hello-world/prerequisites.html)
-5. [Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)
+2. [Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)
+3. [Provisioning part 1](https://edukit.workshop.aws/en/blinky-hello-world/prerequisites.html)
+4. [Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)
+5. Clone this repository like in step 2, and switch over to this repository before step 6.
 6. [Connecting to AWS IoT Core](https://edukit.workshop.aws/en/blinky-hello-world/connecting-to-aws.html)
 
 Make sure the workspace has a `sdkconfig` file that has the IoT endpoint Hostname and your WiFi SSID and WiFi Password
