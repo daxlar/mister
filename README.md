@@ -7,7 +7,7 @@ This the starting point to all the repositories in my github that start with the
 1. [mister-frontend](https://github.com/daxlar/mister-frontend)
 2. [mister-backend](https://github.com/daxlar/mister-backend)
 
-This repository, and the above 2 combine to create a protoype solution for prospectively helping workplaces ease back into in-person meetings.
+This repository, and the above 2 combine to create a protoype solution for prospectively helping workplaces ease back into in-person meetings during the COVID-19 pandemic.
 
 The `mister` project is a singular device that tries to intelligently disinfect meeting rooms after they are used by spraying disinfectant in a mist-like fashion in 360 degrees, hence the name `mist` + `er`. Each device is to be uniquely assigned to a meeting room. Along with repositories listed above, the system behaves as following:
 
@@ -20,4 +20,13 @@ The `mister` project is a singular device that tries to intelligently disinfect 
 
 #### Getting started
 
-Since this is a project with hardware and some physical components, follow along with this link on hackster to get started:
+Get a [core2ForAWS](https://www.amazon.com/M5Stack-Core2-ESP32-Development-EduKit/dp/B08VGRZYJR)
+
+Clone this repository
+
+[Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)
+[Provisioning part 1](https://edukit.workshop.aws/en/blinky-hello-world/prerequisites.html)  
+[Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)  
+[Connecting to AWS IoT Core](https://edukit.workshop.aws/en/blinky-hello-world/connecting-to-aws.html)
+
+Since this is a project with hardware and some physical components, follow along with this link on hackster to learn more:
