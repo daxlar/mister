@@ -1,6 +1,6 @@
 # mister
 
-![mister device](/imgs/mister.jpeg)
+![mister device](/imgs/mister.png)
 
 #### What is this ?
 
