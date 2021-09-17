@@ -1,6 +1,6 @@
 # mister
 
-![mister device](/imgs/mister.png)
+![mister device](/imgs/mister-resized.png)
 
 #### What is this ?
 
