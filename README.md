@@ -29,4 +29,6 @@ The `mister` project is a singular device that tries to intelligently disinfect 
 5. [Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)
 6. [Connecting to AWS IoT Core](https://edukit.workshop.aws/en/blinky-hello-world/connecting-to-aws.html)
 
-Since this is a project with hardware and some physical components, follow along with this link on hackster to learn more:
+Make sure the workspace has a `sdkconfig` file that has the IoT endpoint Hostname and your WiFi SSID and WiFi Password
+
+Since this is a project with hardware and some physical components, learn more on [hackster](https://www.hackster.io/merakian/mister-5ca923)
