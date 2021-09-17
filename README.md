@@ -20,11 +20,9 @@ The `mister` project is a singular device that tries to intelligently disinfect 
 
 #### Getting started
 
-Get a [core2ForAWS](https://www.amazon.com/M5Stack-Core2-ESP32-Development-EduKit/dp/B08VGRZYJR)
-
-Clone this repository
-
-[Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)
+Get a [core2ForAWS](https://www.amazon.com/M5Stack-Core2-ESP32-Development-EduKit/dp/B08VGRZYJR)  
+Clone this repository  
+[Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)  
 [Provisioning part 1](https://edukit.workshop.aws/en/blinky-hello-world/prerequisites.html)  
 [Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)  
 [Connecting to AWS IoT Core](https://edukit.workshop.aws/en/blinky-hello-world/connecting-to-aws.html)
