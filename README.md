@@ -1,5 +1,7 @@
 # mister
 
+![mister device](/imgs/mister.jpg)
+
 #### What is this ?
 
 This the starting point to all the repositories in my github that start with the `mister` prefix. You can find them here:
@@ -20,11 +22,11 @@ The `mister` project is a singular device that tries to intelligently disinfect 
 
 #### Getting started
 
-Get a [core2ForAWS](https://www.amazon.com/M5Stack-Core2-ESP32-Development-EduKit/dp/B08VGRZYJR)  
-Clone this repository  
-[Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)  
-[Provisioning part 1](https://edukit.workshop.aws/en/blinky-hello-world/prerequisites.html)  
-[Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)  
-[Connecting to AWS IoT Core](https://edukit.workshop.aws/en/blinky-hello-world/connecting-to-aws.html)
+1. Get a [core2ForAWS](https://www.amazon.com/M5Stack-Core2-ESP32-Development-EduKit/dp/B08VGRZYJR)
+2. Clone this repository
+3. [Setting up the environment](https://edukit.workshop.aws/en/getting-started/prerequisites.html)
+4. [Provisioning part 1](https://edukit.workshop.aws/en/blinky-hello-world/prerequisites.html)
+5. [Provisioning part 2](https://edukit.workshop.aws/en/blinky-hello-world/device-provisioning.html)
+6. [Connecting to AWS IoT Core](https://edukit.workshop.aws/en/blinky-hello-world/connecting-to-aws.html)
 
 Since this is a project with hardware and some physical components, follow along with this link on hackster to learn more:
